@@ -1,6 +1,8 @@
 Bundler.require
 Dotenv.load
 
+Dir.glob('./lib/**/*.rb') { |file| require_relative file }
+
 # jira-ruby gem が noisy な warn を出すので抑制
 def warn(*) end
 
@@ -9,56 +11,12 @@ PREDICTION_SIZE = 5
 MEMBER_COUNT = 5
 BASE_SPRINT_DAYS = 10
 
-# get client
-def client
-  return @client unless @client.nil?
+jira_util = JiraUtil.new
 
-  options = {
-    username: ENV.fetch('ATTLASIAN_EMAIL'),
-    password: ENV.fetch('ATTLASIAN_TOKEN'),
-    site: ENV.fetch('ATTLASIAN_URL'),
-    context_path: '',
-    auth_type: :basic
-  }
-  @client = JIRA::Client.new(options)
-end
+board = jira_util.board
+achievement_sprints = board.achievement_sprints(ACHIEVEMENT_SIZE)
 
-custom_fields = client.Field.map_fields
-
-# get board & achievement sprints
-def get_all_sprints(board)
-  all_sprints = []
-  start_at = 0
-  max_results = 50
-
-  loop do
-    searched_sprints = board.sprints(startAt: start_at)
-    all_sprints += searched_sprints
-    break if searched_sprints.empty?
-
-    start_at += max_results
-  end
-
-  all_sprints
-end
-
-def select_work_sprints(sprints)
-  sprints.select do |sprint|
-    sprint.name.match(/^Bear\/Lego Sprint \d+$/)
-  end
-end
-
-def get_working_sprint_index(sprints)
-  sprints.find_index do |sprint, i|
-    ['active', 'future'].include?(sprint.state)
-  end
-end
-
-board = client.Board.all.find do |board| board.name == ENV['JIRA_BOARD_NAME'] end
-all_sprints = get_all_sprints(board)
-work_sprints = select_work_sprints(all_sprints)
-working_sprint_index = get_working_sprint_index(work_sprints)
-achievement_sprints = work_sprints[(working_sprint_index - ACHIEVEMENT_SIZE)..(working_sprint_index - 1)]
+binding.pry
 
 # calculate achievement
 def reject_unburnable_issues(issues)
