@@ -15,127 +15,8 @@ jira_util = JiraUtil.new
 
 board = jira_util.board
 achievement_sprints = board.achievement_sprints(ACHIEVEMENT_SIZE)
-
-binding.pry
-
-# calculate achievement
-def reject_unburnable_issues(issues)
-  issues.reject do |issue|
-    issue['epicField']['text'].match(/\[U\]/)
-  end
-end
-
-def select_unburnable_issues(issues)
-  issues - reject_unburnable_issues(issues)
-end
-
-def extract_completed_issues(report)
-  reject_unburnable_issues(report.completedIssues)
-end
-
-def extract_incompleted_issues(report)
-  reject_unburnable_issues(report.issuesNotCompletedInCurrentSprint)
-end
-
-def calculate_completed_issues_resolved_points(issues)
-  issues.map do |issue|
-    issue.dig('currentEstimateStatistic', 'statFieldValue', 'value') || 0
-  end.sum
-end
-
-def calculate_incompleted_issues_resolved_points(issues)
-  issues.map do |issue|
-    estimated_point = issue.dig('estimateStatistic', 'statFieldValue', 'value')
-    current_point = issue.dig('currentEstimateStatistic', 'statFieldValue', 'value')
-
-    estimated_point != nil && current_point != nil && estimated_point != current_point && current_point != 0 ? estimated_point - current_point : 0
-  end.sum
-end
-
-def extract_interrupted_issues(issues, added_during_sprint_issue_keys, sprint)
-  issues.select do |issue|
-    issue['epicField']['text'].match(/\[P\]/) || (added_during_sprint_issue_keys.include?(issue['key']) && (sprint.startDate.to_date..sprint.completeDate.to_date).include?(client.Issue.find(issue['key']).created.to_date))
-  end
-end
-
-def calculate_interrupted_issues_points(issues)
-  issues.map do |issue|
-    estimated_point = issue.dig('estimateStatistic', 'statFieldValue', 'value')
-    current_point = issue.dig('currentEstimateStatistic', 'statFieldValue', 'value')
-
-    next 0 if current_point == 0
-    next [estimated_point, current_point].max if estimated_point != nil && current_point != nil
-
-    estimated_point || current_point || 0
-  end.sum
-end
-
-pretty_sprint_reports = achievement_sprints.map do |sprint|
-  report = sprint.sprint_report
-
-  completed_issues = extract_completed_issues(report)
-  completed_issues_resolved_points = calculate_completed_issues_resolved_points(completed_issues)
-  incompleted_issues = extract_incompleted_issues(report)
-  incompleted_issues_resolved_points = calculate_incompleted_issues_resolved_points(incompleted_issues)
-  resolved_points = completed_issues_resolved_points + incompleted_issues_resolved_points
-
-  added_during_sprint_issue_keys = report.issueKeysAddedDuringSprint
-  completed_interrupted_issues = extract_interrupted_issues(completed_issues, added_during_sprint_issue_keys, sprint)
-  completed_interrupted_issues_resolved_points = calculate_completed_issues_resolved_points(completed_interrupted_issues)
-  incompleted_interrupted_issues = extract_interrupted_issues(incompleted_issues, added_during_sprint_issue_keys, sprint)
-  incompleted_interrupted_issues_resolved_points = calculate_incompleted_issues_resolved_points(incompleted_interrupted_issues)
-  interrupted_points = completed_interrupted_issues_resolved_points + incompleted_interrupted_issues_resolved_points
-
-  unburnable_issues = select_unburnable_issues(report.completedIssues)
-  unburnable_issues_points = calculate_completed_issues_resolved_points(unburnable_issues)
-
-  open_date = sprint.startDate.to_date
-  close_date = sprint.completeDate.to_date
-  days = (close_date - open_date).to_i
-  week_days = days - open_date.upto(close_date).count { |date| [0, 6].include?(date.wday) }
-  sprint_size = week_days * MEMBER_COUNT
-
-  {
-    sprint: sprint.name.match(/\d+/)[0],
-    resolved_points: resolved_points,
-    interrupted_points: interrupted_points,
-    progress_points: resolved_points - interrupted_points,
-    unburnable_issues_points: unburnable_issues_points,
-    days: days,
-    week_days: week_days,
-    sprint_size: sprint_size,
-  }
-end
-
-achievement_table = Terminal::Table.new do |t|
-  %i(sprint).each do |key|
-    t << [
-      key,
-      *pretty_sprint_reports.map { |s| s[key] },
-      'SUM'
-    ]
-  end
-
-  t << :separator
-
-  %i(resolved_points interrupted_points progress_points unburnable_issues_points).each do |key|
-    t << [
-      key,
-      *pretty_sprint_reports.map { |s| s[key].round(1) },
-      pretty_sprint_reports.sum { |s| s[key] }.round(1)
-    ]
-  end
-
-  t << :separator
-
-  %i(days week_days sprint_size).each do |key|
-    t << [
-      key,
-      *pretty_sprint_reports.map { |s| s[key] },
-      pretty_sprint_reports.sum { |s| s[key] }
-    ]
-  end
-end
+summarized_sprint_reports = achievement_sprints.map { |sprint| sprint.summarized_report(MEMBER_COUNT) }
+achievement_table = jira_util.achievement_table(summarized_sprint_reports)
 
 puts
 puts '## achievement'
@@ -172,8 +53,8 @@ sprint_points_list = PREDICTION_SIZE.times.map do |i|
   }
 end
 
-progress_points_sum = pretty_sprint_reports.sum { |s| s[:progress_points] }
-sprint_size_sum = pretty_sprint_reports.sum { |s| s[:sprint_size] }
+progress_points_sum = summarized_sprint_reports.sum { |s| s[:progress_points] }
+sprint_size_sum = summarized_sprint_reports.sum { |s| s[:sprint_size] }
 sprint_capacity = progress_points_sum / sprint_size_sum * BASE_SPRINT_DAYS * MEMBER_COUNT
 
 pretty_epics.each do |epic|

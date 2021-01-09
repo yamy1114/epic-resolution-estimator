@@ -28,4 +28,21 @@ class JiraUtil
 
     @custom_fields = client.Field.map_fields
   end
+
+  def achievement_table(summarized_reports)
+    Terminal::Table.new do |t|
+      t << [:sprint, *summarized_reports.map { |s| s[:sprint] }, 'SUM']
+      t << :separator
+
+      %i(days week_days sprint_size).each do |key|
+        t << [key, *summarized_reports.map { |s| s[key] }, summarized_reports.sum { |s| s[key] }]
+      end
+
+      t << :separator
+
+      %i(resolved_points interrupted_points progress_points unburnable_points).each do |key|
+        t << [key, *summarized_reports.map { |s| s[key].round(1) }, summarized_reports.sum { |s| s[key] }.round(1)]
+      end
+    end
+  end
 end

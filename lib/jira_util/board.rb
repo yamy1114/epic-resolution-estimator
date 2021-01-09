@@ -9,6 +9,8 @@ class JiraUtil
     private
 
     def all_sprints
+      return @all_sprints unless @all_sprints.nil?
+
       all_sprints = []
       start_at = 0
       max_results = 50
@@ -21,7 +23,7 @@ class JiraUtil
         start_at += max_results
       end
 
-      all_sprints.map do |sprint|
+      @all_sprints = all_sprints.map do |sprint|
         Sprint.new(sprint)
       end
     end
