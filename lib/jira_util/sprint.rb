@@ -5,6 +5,7 @@ class JiraUtil
     end
 
     WORK_SPRINT_MATCHER = /^Bear\/Lego Sprint \d+$/.freeze
+
     def work?
       @sprint.name.match(WORK_SPRINT_MATCHER)
     end
@@ -19,7 +20,7 @@ class JiraUtil
       Report.new(@sprint.sprint_report, self)
     end
 
-    def summarized_report(member_count)
+    def summarized_report
       {
         sprint: index,
         resolved_points: report.resolved_points,
@@ -28,7 +29,7 @@ class JiraUtil
         unburnable_points: report.unburnable_points,
         days: days,
         week_days: week_days,
-        sprint_size: size(member_count)
+        sprint_size: size
       }
     end
 
@@ -40,22 +41,22 @@ class JiraUtil
       completeDate.to_date
     end
 
-    private
-
     def index
-      name.match(/\d+/)[0]
+      name.match(/\d+/)[0].to_i
     end
+
+    private
 
     def days
       (close_date - open_date).to_i
     end
 
     def week_days
-      open_date.upto(close_date).count { |date| !(1..5).include?(date.wday) }
+      open_date.upto(close_date).count { |date| !(date.saturday? || date.sunday?) }
     end
 
-    def size(member_count)
-      week_days * member_count
+    def size
+      week_days * MEMBER_COUNT
     end
   end
 end

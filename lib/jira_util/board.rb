@@ -1,9 +1,14 @@
 class JiraUtil
   class Board < Base
-    def achievement_sprints(achievement_size)
+    def achievement_sprints
       work_sprints = all_sprints.select(&:work?)
       last_closed_sprint_index = work_sprints.rindex(&:closed?)
-      work_sprints.slice(last_closed_sprint_index - achievement_size + 1, achievement_size)
+      work_sprints.slice(last_closed_sprint_index - ACHIEVEMENT_SIZE + 1, ACHIEVEMENT_SIZE)
+    end
+
+    def working_sprint
+      work_sprints = all_sprints.select(&:work?)
+      work_sprints.find { |sprint| !sprint.closed? }
     end
 
     private

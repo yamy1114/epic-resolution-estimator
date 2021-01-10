@@ -68,6 +68,7 @@ class JiraUtil
 
     def created_date
       return @created_date unless @created_date.nil?
+
       JiraUtil.new.client.Issue.find(key).created.to_date
     end
 
