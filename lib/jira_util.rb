@@ -4,7 +4,7 @@ class JiraUtil
   MEMBER_COUNT = 5.freeze
   BASE_SPRINT_DAYS = 10.freeze
 
-  EPIC_SEARCH_QUERY = 'project = BEAR AND issuetype = epic AND status != Done'.freeze
+  EPIC_SEARCH_QUERY = "project = #{ENV.fetch('PROJECT_NAME')} AND issuetype = epic AND status != Done".freeze
   EPIC_SEARCH_MAX_RESULTS = 1_000
 
   def client

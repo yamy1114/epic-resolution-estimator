@@ -1,11 +1,15 @@
 Bundler.require
 require 'active_support/all'
-Dir.glob('./lib/**/*.rb') { |file| require_relative file }
 
 Dotenv.load
 
+Dir.glob('./lib/**/*.rb') { |file| require_relative file }
+
 # jira-ruby gem が noisy な warn を出すので抑制
 def warn(*) end
+
+puts "member_count: #{JiraUtil::MEMBER_COUNT}"
+puts "base_sprint_days: #{JiraUtil::BASE_SPRINT_DAYS}"
 
 jira_util = JiraUtil.new
 

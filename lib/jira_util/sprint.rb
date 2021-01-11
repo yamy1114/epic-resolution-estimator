@@ -4,10 +4,10 @@ class JiraUtil
       CLOSED = 'closed'.freeze
     end
 
-    WORK_SPRINT_MATCHER = /^Bear\/Lego Sprint \d+$/.freeze
+    WORK_SPRINT_MATCHER = Regexp.new(ENV.fetch('WORK_SPRINT_MATCHER_STRING')).freeze
 
     def work?
-      @sprint.name.match(WORK_SPRINT_MATCHER)
+      name.match(WORK_SPRINT_MATCHER)
     end
 
     def closed?
