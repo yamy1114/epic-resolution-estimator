@@ -24,11 +24,24 @@ puts achievement_table
 
 # estimate future epic resolution
 summarized_epics = jira_util.epics.map(&:summarized).sort_by { |epic| epic[:rank] }
-estimated_sprint_capacity = jira_util.estimated_sprint_capacity(summarized_sprint_reports)
-future_sprint_estimations = jira_util.future_sprint_estimations(summarized_epics, estimated_sprint_capacity)
-estimation_table = jira_util.estimation_table(future_sprint_estimations)
+last_sprint_capacities = jira_util.last_sprint_capacities(summarized_sprint_reports)
+
+estimated_sprint_capacities = {
+  average: last_sprint_capacities.sum / last_sprint_capacities.size,
+  worst: last_sprint_capacities.min,
+  best: last_sprint_capacities.max
+}
+
+sprint_resolution_estimations_hash = estimated_sprint_capacities.map do |type, capacity|
+  [type, jira_util.sprint_resolution_estimations(summarized_epics, capacity)]
+end.to_h
+
+estimation_table = jira_util.estimation_table(sprint_resolution_estimations_hash)
 
 puts
 puts '## estimation'
-puts "sprint_capacity: #{estimated_sprint_capacity.round(1)}"
+puts "sprint_capacity:"
+estimated_sprint_capacities.each do |type, capacity|
+  puts "#{type}: #{capacity.round(1)}".send(JiraUtil::TEXT_COLOR[type])
+end
 puts estimation_table
