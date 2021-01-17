@@ -26,37 +26,20 @@ class JiraUtil
         resolved_points: report.resolved_points,
         interrupted_points: report.interrupted_points,
         progress_points: report.progress_points,
-        unburnable_points: report.unburnable_points,
-        days: days,
-        week_days: week_days,
-        sprint_size: size
+        work_days: TimeUtil.work_days(open_time, close_time),
       }
     end
 
-    def open_date
-      startDate.to_date
+    def open_time
+      startDate.to_time
     end
 
-    def close_date
-      completeDate.to_date
+    def close_time
+      completeDate.to_time
     end
 
     def index
       name.match(/\d+/)[0].to_i
-    end
-
-    private
-
-    def days
-      (close_date - open_date).to_i
-    end
-
-    def week_days
-      open_date.upto(close_date).count { |date| !(date.saturday? || date.sunday?) }
-    end
-
-    def size
-      week_days * MEMBER_COUNT
     end
   end
 end

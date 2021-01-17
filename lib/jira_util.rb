@@ -1,7 +1,6 @@
 class JiraUtil
   ACHIEVEMENT_SIZE = 5.freeze
   ESTIMATION_SIZE = 5.freeze
-  MEMBER_COUNT = 5.freeze
   BASE_SPRINT_DAYS = 10.freeze
 
   EPIC_SEARCH_QUERY = "project = #{ENV.fetch('PROJECT_NAME')} AND issuetype = epic AND status != Done".freeze
@@ -54,15 +53,10 @@ class JiraUtil
   def achievement_table(summarized_reports)
     Terminal::Table.new do |t|
       t << [:sprint, *summarized_reports.map { |s| s[:sprint] }]
+      t << [:work_days, *summarized_reports.map { |s| s[:work_days].round(1) }]
       t << :separator
 
-      %i(days week_days sprint_size).each do |key|
-        t << [key, *summarized_reports.map { |s| s[key] }]
-      end
-
-      t << :separator
-
-      %i(resolved_points interrupted_points progress_points unburnable_points).each do |key|
+      %i(resolved_points interrupted_points progress_points).each do |key|
         t << [key, *summarized_reports.map { |s| s[key].round(1) }]
       end
     end
@@ -70,22 +64,23 @@ class JiraUtil
 
   def last_sprint_capacities(summarized_reports)
     summarized_reports.map do |report|
-      report[:progress_points] / report[:sprint_size] * BASE_SPRINT_DAYS * MEMBER_COUNT
+      report[:progress_points] / report[:work_days] * BASE_SPRINT_DAYS
     end
   end
 
-  def sprint_resolution_estimations(summarized_epics, sprint_capacity)
+  def sprint_resolution_estimations(summarized_epics, base_sprint_capacity)
     start_sprint_index = board.working_sprint.index
-    start_sprint_open_date = board.working_sprint.open_date
+    start_sprint_open_time = board.working_sprint.open_time
 
     sprint_estimations = ESTIMATION_SIZE.times.map do |i|
-      open_date = start_sprint_open_date + i * 2.weeks
-      close_date = start_sprint_open_date + (i + 1) * 2.weeks - 1
+      open_time = start_sprint_open_time + i * 2.weeks
+      close_time = start_sprint_open_time + (i + 1) * 2.weeks - 1
 
       {
         sprint: start_sprint_index + i,
         epics: [],
-        period: "#{open_date.month}/#{open_date.day}~#{close_date.month}/#{close_date.day}"
+        period: "#{open_time.month}/#{open_time.day}~#{close_time.month}/#{close_time.day}",
+        work_days: TimeUtil.work_days(open_time, close_time)
       }
     end
 
@@ -93,6 +88,7 @@ class JiraUtil
       remaining_point = epic[:point] || 0.0
 
       sprint_estimations.each do |sprint_estimation|
+        sprint_capacity = base_sprint_capacity / BASE_SPRINT_DAYS * sprint_estimation[:work_days]
         remaining_capacity = sprint_capacity - sprint_estimation[:epics].sum { |e| e[:resolved_points] || 0 }
 
         if remaining_point <= remaining_capacity
@@ -116,12 +112,14 @@ class JiraUtil
   def estimation_table(sprint_resolution_estimations_hash)
     sprint_indexes = sprint_resolution_estimations_hash[:average].map { |sp| sp[:sprint] }
     sprint_periods = sprint_resolution_estimations_hash[:average].map { |sp| sp[:period] }
+    sprint_work_dayss = sprint_resolution_estimations_hash[:average].map { |sp| sp[:work_days].round(1) }
     epic_summaries = sprint_resolution_estimations_hash[:average].first[:epics].map { |epic| epic[:summary] }
     sprint_count = sprint_resolution_estimations_hash[:average].size
 
     Terminal::Table.new do |t|
       t << [:sprint, *sprint_indexes]
       t << [:period, *sprint_periods]
+      t << [:work_days, *sprint_work_dayss]
       t << :separator
 
       epic_summaries.each_with_index do |epic_summary, epic_index|

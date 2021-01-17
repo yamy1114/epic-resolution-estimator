@@ -26,9 +26,5 @@ class JiraUtil
     def progress_points
       resolved_points - interrupted_points
     end
-
-    def unburnable_points
-      issues.select(&:unburnable?).sum(&:resolved_point)
-    end
   end
 end

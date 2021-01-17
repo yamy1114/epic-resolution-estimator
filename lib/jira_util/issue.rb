@@ -73,7 +73,7 @@ class JiraUtil
     end
 
     def created_in_sprint?
-      (@report.sprint.open_date..@report.sprint.close_date).include?(created_date)
+      (@report.sprint.open_time..@report.sprint.close_time).include?(created_date)
     end
 
     def key

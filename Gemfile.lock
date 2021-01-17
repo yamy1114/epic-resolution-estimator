@@ -12,6 +12,7 @@ GEM
     colorize (0.8.1)
     concurrent-ruby (1.1.7)
     dotenv (2.7.6)
+    holiday_japan (1.4.4)
     i18n (1.8.7)
       concurrent-ruby (~> 1.0)
     jira-ruby (2.1.4)
@@ -41,6 +42,7 @@ DEPENDENCIES
   activesupport
   colorize
   dotenv
+  holiday_japan
   jira-ruby
   pry
   terminal-table
