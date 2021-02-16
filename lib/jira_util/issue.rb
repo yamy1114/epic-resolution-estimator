@@ -27,7 +27,7 @@ class JiraUtil
     private
 
     def epic_summary
-      @issue.dig('epicField', 'text')
+      @issue.dig('epicField', 'text') || ''
     end
 
     def permanent?
