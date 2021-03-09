@@ -10,7 +10,7 @@ def warn(*) end
 
 puts "base_sprint_days: #{JiraUtil::BASE_SPRINT_DAYS}"
 
-jira_util = JiraUtil.new
+jira_util = JiraUtil.get_instance
 
 # calculate achievement
 achievement_sprints = jira_util.board.achievement_sprints

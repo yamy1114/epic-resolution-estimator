@@ -24,11 +24,11 @@ class JiraUtil
       permanent? || added_during_sprint? && created_in_sprint?
     end
 
-    private
-
     def epic_summary
       @issue.dig('epicField', 'text') || ''
     end
+
+    private
 
     def permanent?
       epic_summary.match(PERMANENT_EPIC_LABEL_MATCHER)
@@ -69,7 +69,7 @@ class JiraUtil
     def created_date
       return @created_date unless @created_date.nil?
 
-      JiraUtil.new.client.Issue.find(key).created.to_date
+      JiraUtil.get_instance.client.Issue.find(key).created.to_date
     end
 
     def created_in_sprint?

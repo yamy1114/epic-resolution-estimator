@@ -10,5 +10,6 @@ gem 'dotenv'
 gem 'holiday_japan'
 gem 'jira-ruby'
 gem 'terminal-table'
+gem 'parallel'
 gem 'pry'
 

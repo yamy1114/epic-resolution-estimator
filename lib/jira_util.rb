@@ -12,6 +12,10 @@ class JiraUtil
       best: :light_red
   }.freeze
 
+  def self.get_instance
+    @instance ||= self.new
+  end
+
   def client
     return @client unless @client.nil?
 

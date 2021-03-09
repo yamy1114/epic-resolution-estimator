@@ -13,6 +13,6 @@ bundle install --path vendor/bundle
 ## run
 
 ```
-bundle exec ruby main.rb
+bundle exec ruby <script_name>.rb
 ```
 
