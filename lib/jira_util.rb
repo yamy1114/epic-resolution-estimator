@@ -33,8 +33,16 @@ class JiraUtil
   def board
     return @board unless @board.nil?
 
-    board = client.Board.all.find do |board|
-      board.name == ENV.fetch('JIRA_BOARD_NAME')
+    board_id_file_name = 'tmp/board_id'
+
+    if File.exist?(board_id_file_name)
+      board = client.Board.find(File.read(board_id_file_name).to_i)
+    else
+      board = client.Board.all.find do |board|
+        board.name == ENV.fetch('JIRA_BOARD_NAME')
+      end
+
+      File.write(board_id_file_name, board.id)
     end
 
     @board = Board.new(board)

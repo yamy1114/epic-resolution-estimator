@@ -21,13 +21,23 @@ class JiraUtil
     end
 
     def summarized_report
-      {
+      report_file_name = "tmp/sprint_report_#{index}"
+
+      if File.exist?(report_file_name)
+        return JSON.parse(File.read(report_file_name), symbolize_names: true)
+      end
+
+      report_hash = {
         sprint: index,
         resolved_points: report.resolved_points,
         interrupted_points: report.interrupted_points,
         progress_points: report.progress_points,
         work_days: TimeUtil.work_days(open_time, close_time),
       }
+
+      File.write(report_file_name, report_hash.to_json)
+
+      report_hash
     end
 
     def open_time

@@ -16,17 +16,8 @@ class JiraUtil
     def all_sprints
       return @all_sprints unless @all_sprints.nil?
 
-      all_sprints = []
-      start_at = 0
-      max_results = 50
-
-      loop do
-        searched_sprints = @board.sprints(startAt: start_at)
-        all_sprints += searched_sprints
-        break if searched_sprints.empty?
-
-        start_at += max_results
-      end
+      start_at = 100 # 古い Sprint は参照しなくて良いため start_at をある程度大きな値にしておく
+      all_sprints = @board.sprints(startAt: start_at)
 
       @all_sprints = all_sprints.map do |sprint|
         Sprint.new(sprint)

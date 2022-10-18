@@ -17,7 +17,7 @@ class JiraUtil
 
       issue_keys.each_slice(RANK_ISSUE_MAX_UNIT).reverse_each do |keys|
         request_body = {
-          issues: keys,
+          issues: keys.reverse,
           rankAfterIssue: key,
           rankCustomFieldId: jira_util.custom_fields.rank.match(/\d+/)[0].to_i
         }
