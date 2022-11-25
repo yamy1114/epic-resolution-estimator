@@ -82,7 +82,7 @@ class JiraUtil
 
   def sprint_resolution_estimations(summarized_epics, base_sprint_capacity)
     start_sprint_index = board.working_sprint.index
-    start_sprint_open_time = board.working_sprint.open_time
+    start_sprint_open_time = board.working_sprint.nil? ? Time.now : board.working_sprint.open_time
 
     sprint_estimations = ESTIMATION_SIZE.times.map do |i|
       open_time = start_sprint_open_time + i * 2.weeks

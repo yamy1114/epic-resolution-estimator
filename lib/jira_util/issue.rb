@@ -1,7 +1,7 @@
 class JiraUtil
   class Issue < Base
     module Status
-      DONE = 'done'.freeze
+      DONE = 'Done'.freeze
     end
 
     UNBURNABLE_EPIC_LABEL_MATCHER = /\[U\]/
@@ -39,7 +39,7 @@ class JiraUtil
     end
 
     def status
-      @issue.dig('status', 'statusCategory', 'key')
+      @issue.dig('status', 'name')
     end
 
     def completed_issue_resolved_point
