@@ -6,6 +6,7 @@ class JiraUtil
 
     UNBURNABLE_EPIC_LABEL_MATCHER = /\[U\]/
     PERMANENT_EPIC_LABEL_MATCHER = /\[P\]/
+    IMPROVEMENT_EPIC_LABEL_MATCHER = /improvement/i
 
     def initialize(issue, report)
       super(issue)
@@ -22,6 +23,10 @@ class JiraUtil
 
     def interrupted?
       permanent? || added_during_sprint? && created_in_sprint?
+    end
+
+    def improvement?
+      epic_summary.match(IMPROVEMENT_EPIC_LABEL_MATCHER)
     end
 
     def epic_summary

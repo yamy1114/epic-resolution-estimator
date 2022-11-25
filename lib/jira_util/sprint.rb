@@ -32,6 +32,7 @@ class JiraUtil
         resolved_points: report.resolved_points,
         interrupted_points: report.interrupted_points,
         progress_points: report.progress_points,
+        improvement_points: report.improvement_points,
         work_days: TimeUtil.work_days(open_time, close_time),
       }
 

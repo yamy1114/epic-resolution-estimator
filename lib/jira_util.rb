@@ -68,9 +68,11 @@ class JiraUtil
       t << [:work_days, *summarized_reports.map { |s| s[:work_days].round(1) }]
       t << :separator
 
-      %i(resolved_points interrupted_points progress_points).each do |key|
+      %i(resolved_points interrupted_points progress_points improvement_points).each do |key|
         t << [key, *summarized_reports.map { |s| s[key].round(1) }]
       end
+
+      t << [:improvement_percent, *summarized_reports.map { |s| "#{(s[:improvement_points] / s[:progress_points] * 100).round(1)}%" }]
     end
   end
 

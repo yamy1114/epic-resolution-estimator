@@ -26,5 +26,9 @@ class JiraUtil
     def progress_points
       resolved_points - interrupted_points
     end
+
+    def improvement_points
+      issues.select(&:improvement?).reject(&:interrupted?).sum(&:resolved_point)
+    end
   end
 end

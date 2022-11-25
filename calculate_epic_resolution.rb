@@ -9,6 +9,7 @@ Dir.glob('./lib/**/*.rb') { |file| require_relative file }
 def warn(*) end
 
 puts "base_sprint_days: #{JiraUtil::BASE_SPRINT_DAYS}"
+puts "IMPROVEMENT_EPIC_LABEL_MATCHER: #{JiraUtil::Issue::IMPROVEMENT_EPIC_LABEL_MATCHER.inspect}"
 
 jira_util = JiraUtil.get_instance
 
